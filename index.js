@@ -33,7 +33,9 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("<h1>Hello Welcome to server of placement Cell</h1>");
+  res.send(
+    "<h1>Hello Welcome to Server of Placement Cell, Will be Updating this very Soon</h1>"
+  );
 });
 
 app.get("/placements", function (req, res) {
