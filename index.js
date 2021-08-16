@@ -17,18 +17,20 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-const port = process.env.PORT || 3001;
 const upload = multer();
+
+const port = process.env.PORT || 3001;
 const app = express();
 app.use(
   cors({
     origin: "*",
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(
   express.urlencoded({
     extended: true,
+    limit: "50mb",
   })
 );
 
@@ -50,7 +52,6 @@ app.get("/placements", function (req, res) {
         for (var id in data) {
           opportunities.push({ id, ...data[id] });
         }
-        // console.log(opportunities);
         res.send(opportunities);
       })
       .catch((error) => {
@@ -186,19 +187,23 @@ app.post("/updateResume", (req, res) => {
   });
 });
 
-app.post("/uploadFirebase", async (req, res) => {
-  console.log(req.body);
-  const storageRef = firebase
-    .storage()
-    .ref()
-    .child("resume/" + req.body.resumeName);
-  const response = storageRef.put(req.body.file.uri);
+app.post("/uploadFirebase", upload.single("file"), async (req, res) => {
+    var file = req.file;
+    let metadata = { contentType: file.mimetype, name: req.body.name };
+    const storageRef = firebase
+      .storage()
+      .ref()
+      .child(`${req.body.type}/` + req.body.name);
+    const resp = storageRef.put(file.buffer, metadata);
+    resp.on(firebase.storage.TaskEvent.STATE_CHANGED, null, null, () => {
+      storageRef.getDownloadURL().then((downloadUrl) => {
+        res.send(downloadUrl);
+      });
+    });
 });
 
 app.post("/signup", (req, res) => {
-  console.log("Recieved");
   const uinfo = req.body;
-  console.log(uinfo);
   const name = uinfo.name;
   const password = uinfo.password;
   const mobile = uinfo.mobile;
@@ -221,19 +226,18 @@ app.post("/signup", (req, res) => {
           },
           (error) => {
             if (error) {
-              res.send("Error aaa");
+              res.send("Error");
             } else {
               try {
                 res.send({ result: "Success", uid: uid });
               } catch {
-                res.send("Error bbb ");
+                res.send("Error");
               }
             }
           }
         );
       } catch (e) {
-        console.log(e);
-        res.send("Error ccc");
+        res.send("Error");
       }
     })
     .catch((err) => {
