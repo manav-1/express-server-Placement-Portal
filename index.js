@@ -32,6 +32,10 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.send("<h1>Hello Welcome to server of placement Cell</h1>");
+});
+
 app.get("/placements", function (req, res) {
   const loggedUserId = req.query.loggedUserId;
   if (loggedUserId) {
