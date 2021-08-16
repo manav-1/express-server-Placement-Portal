@@ -6,7 +6,6 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const fs = require("fs");
 
-
 var firebaseConfig = {
   apiKey: "AIzaSyDUFM10Vom9Cxd32MbT7dbvFMLKLmCMl1E",
   authDomain: "quizmania-cdf81.firebaseapp.com",
@@ -19,7 +18,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const port = process.env.PORT || 3001;
-const upload = multer()
+const upload = multer();
 const app = express();
 app.use(
   cors({
@@ -32,7 +31,6 @@ app.use(
     extended: true,
   })
 );
-
 
 app.get("/placements", function (req, res) {
   const loggedUserId = req.query.loggedUserId;
@@ -183,29 +181,91 @@ app.post("/updateResume", (req, res) => {
 });
 
 app.post("/uploadFirebase", async (req, res) => {
+  console.log(req.body);
+  const storageRef = firebase
+    .storage()
+    .ref()
+    .child("resume/" + req.body.resumeName);
+  const response = storageRef.put(req.body.file.uri);
+});
 
-  console.log(req.body)
+app.post("/signup", (req, res) => {
+  console.log("Recieved");
+  const uinfo = req.body;
+  console.log(uinfo);
+  const name = uinfo.name;
+  const password = uinfo.password;
+  const mobile = uinfo.mobile;
+  const email = uinfo.email;
 
+  var uid = "";
+  firebase
+    .auth()
+    .createUserWithEmailAndPassword(email, password)
+    .then((user) => {
+      try {
+        uid = user.user.uid;
+        const usersDbRef = firebase.database().ref("users/");
+        usersDbRef.child(uid).set(
+          {
+            uid,
+            email,
+            mobile,
+            name,
+          },
+          (error) => {
+            if (error) {
+              res.send("Error aaa");
+            } else {
+              try {
+                res.send({ result: "Success", uid: uid });
+              } catch {
+                res.send("Error bbb ");
+              }
+            }
+          }
+        );
+      } catch (e) {
+        console.log(e);
+        res.send("Error ccc");
+      }
+    })
+    .catch((err) => {
+      res.send("Err");
+    });
+});
 
-  // console.log('received')
-  // console.log(req.body)
-  // const task = req.body
-  // // const file  = req.file
-  // // // const file = req.file
-  // // console.log(task);
-  // // console.log(file)
-  // res.send("Done")
-  // // if (task.type === "image") {
-  // // } else if (task.type === "resume") {
-  //   const resumeName = task.resumeName;
-  //   const blob = task.file
-    const storageRef = firebase
-      .storage()
-      .ref()
-      .child("resume/" + req.body.resumeName);
-    const response = storageRef.put(req.body.file.uri);
-  //   res.send("Done");
-  // }
+app.post("/login", (req, res) => {
+  var uinfo = req.body;
+  const email = uinfo.email;
+  const password = uinfo.password;
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(email, password)
+    .then(async (user) => {
+      try {
+        const userId = user.user.uid;
+        res.send({ result: "success", uid: userId });
+      } catch {
+        res.send("Error");
+      }
+    })
+    .catch((error) => {
+      res.send(error);
+    });
+});
+
+app.get("/forgot-password", (req, res) => {
+  const email = req.query.email;
+  firebase
+    .auth()
+    .sendPasswordResetEmail(email)
+    .then(function () {
+      res.send("Success");
+    })
+    .catch(function (error) {
+      res.send("Error");
+    });
 });
 
 app.listen(port, function () {
