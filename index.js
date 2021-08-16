@@ -3,6 +3,9 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 const firebase = require("firebase");
 const bodyParser = require("body-parser");
+const multer = require("multer");
+const fs = require("fs");
+
 
 var firebaseConfig = {
   apiKey: "AIzaSyDUFM10Vom9Cxd32MbT7dbvFMLKLmCMl1E",
@@ -16,6 +19,7 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const port = process.env.PORT || 3001;
+const upload = multer()
 const app = express();
 app.use(
   cors({
@@ -28,6 +32,8 @@ app.use(
     extended: true,
   })
 );
+
+
 app.get("/placements", function (req, res) {
   const loggedUserId = req.query.loggedUserId;
   if (loggedUserId) {
@@ -174,6 +180,32 @@ app.post("/updateResume", (req, res) => {
       res.send(true);
     }
   });
+});
+
+app.post("/uploadFirebase", async (req, res) => {
+
+  console.log(req.body)
+
+
+  // console.log('received')
+  // console.log(req.body)
+  // const task = req.body
+  // // const file  = req.file
+  // // // const file = req.file
+  // // console.log(task);
+  // // console.log(file)
+  // res.send("Done")
+  // // if (task.type === "image") {
+  // // } else if (task.type === "resume") {
+  //   const resumeName = task.resumeName;
+  //   const blob = task.file
+    const storageRef = firebase
+      .storage()
+      .ref()
+      .child("resume/" + req.body.resumeName);
+    const response = storageRef.put(req.body.file.uri);
+  //   res.send("Done");
+  // }
 });
 
 app.listen(port, function () {
