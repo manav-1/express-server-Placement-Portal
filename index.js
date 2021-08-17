@@ -85,7 +85,7 @@ app.get("/applyPlacements", (req, res) => {
   const loggedUserId = req.query.uid;
   const cName = req.query.cName;
   const profile = req.query.profile;
-  const dbRef = firebase.database().ref("placements/" + req.query.pId);
+  const dbRef = firebase.database().ref("placements/" + req.query.pid);
   firebase
     .database()
     .ref("users/" + loggedUserId)
