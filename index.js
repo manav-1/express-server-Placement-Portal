@@ -81,6 +81,7 @@ app.get("/deletePlacements", (req, res) => {
 });
 
 app.get("/applyPlacements", (req, res) => {
+  console.log("Application");
   const loggedUserId = req.query.uid;
   const cName = req.query.cName;
   const profile = req.query.profile;
@@ -101,7 +102,7 @@ app.get("/applyPlacements", (req, res) => {
         var tenth = data.tenth;
         var twelve = data.twelve;
         var college = data.college;
-        var projects = data.projects;
+        var projects = data.projects || null ;
         dbRef
           .child("applicants/" + loggedUserId + "_" + name + "_" + mobile)
           .set(
@@ -119,6 +120,7 @@ app.get("/applyPlacements", (req, res) => {
             },
             (err) => {
               if (err) {
+                console.error(err);
                 res.send(false);
               } else {
                 fetch(
@@ -131,6 +133,7 @@ app.get("/applyPlacements", (req, res) => {
       }
     })
     .catch((err) => {
+      console.error(err);
       res.send(false);
     });
 });
@@ -188,18 +191,18 @@ app.post("/updateResume", (req, res) => {
 });
 
 app.post("/uploadFirebase", upload.single("file"), async (req, res) => {
-    var file = req.file;
-    let metadata = { contentType: file.mimetype, name: req.body.name };
-    const storageRef = firebase
-      .storage()
-      .ref()
-      .child(`${req.body.type}/` + req.body.name);
-    const resp = storageRef.put(file.buffer, metadata);
-    resp.on(firebase.storage.TaskEvent.STATE_CHANGED, null, null, () => {
-      storageRef.getDownloadURL().then((downloadUrl) => {
-        res.send(downloadUrl);
-      });
+  var file = req.file;
+  let metadata = { contentType: file.mimetype, name: req.body.name };
+  const storageRef = firebase
+    .storage()
+    .ref()
+    .child(`${req.body.type}/` + req.body.name);
+  const resp = storageRef.put(file.buffer, metadata);
+  resp.on(firebase.storage.TaskEvent.STATE_CHANGED, null, null, () => {
+    storageRef.getDownloadURL().then((downloadUrl) => {
+      res.send(downloadUrl);
     });
+  });
 });
 
 app.post("/signup", (req, res) => {
