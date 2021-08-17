@@ -35,9 +35,7 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send(
-    "<h1>Hello Welcome to Server of Placement Cell, Will be Updating this very Soon</h1>"
-  );
+  res.sendFile(__dirname + "/files/index.html");
 });
 
 app.get("/placements", function (req, res) {
@@ -102,7 +100,7 @@ app.get("/applyPlacements", (req, res) => {
         var tenth = data.tenth;
         var twelve = data.twelve;
         var college = data.college;
-        var projects = data.projects || null ;
+        var projects = data.projects || null;
         dbRef
           .child("applicants/" + loggedUserId + "_" + name + "_" + mobile)
           .set(
