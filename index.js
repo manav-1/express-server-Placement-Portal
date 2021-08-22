@@ -5,6 +5,7 @@ const firebase = require("firebase");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const fs = require("fs");
+const { resolveNaptr } = require("dns");
 
 var firebaseConfig = {
   apiKey: "AIzaSyDUFM10Vom9Cxd32MbT7dbvFMLKLmCMl1E",
@@ -79,7 +80,6 @@ app.get("/deletePlacements", (req, res) => {
 });
 
 app.get("/applyPlacements", (req, res) => {
-  console.log("Application");
   const loggedUserId = req.query.uid;
   const cName = req.query.cName;
   const profile = req.query.profile;
@@ -91,9 +91,9 @@ app.get("/applyPlacements", (req, res) => {
     .then((resp) => {
       var data = resp.val();
       if (data) {
-        var name = data.uName;
-        var mobile = data.uMobile;
-        var email = data.uEmail;
+        var name = data.name;
+        var mobile = data.mobile;
+        var email = data.email;
         var resume = data.resume.uriResume;
         var description = data.desc;
         var stream = data.stream;
@@ -277,6 +277,47 @@ app.get("/forgot-password", (req, res) => {
     .catch(function (error) {
       res.send("Error");
     });
+});
+
+app.get("/checkApplied", async (req, res) => {
+  var flag = "NotApplied";
+  const loggedUserId = req.query.loggedUserId; //user id
+  const pid = req.query.pid; //opp id
+  const dbRef = firebase.database().ref("placements/");
+  await dbRef
+    .child(pid)
+    .once("value")
+    .then((resp) => {
+      var data = resp.val();
+      if (data) {
+        if (data.applicants) {
+          for (const id of Object.keys(data.applicants)) {
+            if (id.includes(loggedUserId)) {
+              flag = "Applied";
+              break;
+            }
+          }
+        } else {
+          flag = "NoApplicants";
+        }
+      }
+    });
+  if (flag === "Applied") {
+    res.send({ flag });
+  } else if (flag === "NotApplied" || flag === "NoApplicants") {
+    firebase
+      .database()
+      .ref("users/")
+      .child(loggedUserId)
+      .once("value")
+      .then((resp) => {
+        var data = resp.val();
+        if (data) {
+          var sendData = { flag, ...data };
+          res.send(sendData);
+        }
+      });
+  }
 });
 
 app.listen(port, function () {
