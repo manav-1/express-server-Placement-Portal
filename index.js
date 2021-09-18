@@ -4,24 +4,14 @@ const fetch = require("node-fetch");
 const firebase = require("firebase");
 const bodyParser = require("body-parser");
 const multer = require("multer");
-const fs = require("fs");
-const { resolveNaptr } = require("dns");
+const firebaseConfig = require("./config");
 
-var firebaseConfig = {
-  apiKey: "AIzaSyDUFM10Vom9Cxd32MbT7dbvFMLKLmCMl1E",
-  authDomain: "quizmania-cdf81.firebaseapp.com",
-  databaseURL: "https://quizmania-cdf81-default-rtdb.firebaseio.com",
-  projectId: "quizmania-cdf81",
-  storageBucket: "quizmania-cdf81.appspot.com",
-  messagingSenderId: "826674071410",
-  appId: "1:826674071410:web:144c2e1bcb4696664d3feb",
-};
 firebase.initializeApp(firebaseConfig);
 
 const upload = multer();
-
 const port = process.env.PORT || 3001;
 const app = express();
+
 app.use(
   cors({
     origin: "*",
@@ -39,6 +29,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/files/index.html");
 });
 
+// read
 app.get("/placements", function (req, res) {
   const loggedUserId = req.query.loggedUserId;
   if (loggedUserId) {
@@ -59,6 +50,7 @@ app.get("/placements", function (req, res) {
   }
 });
 
+//delete
 app.get("/deletePlacements", (req, res) => {
   const child = req.query.node;
   const node = firebase.database().ref("placements").child(child);
@@ -79,6 +71,7 @@ app.get("/deletePlacements", (req, res) => {
     });
 });
 
+//update / put
 app.get("/applyPlacements", (req, res) => {
   const loggedUserId = req.query.uid;
   const cName = req.query.cName;
@@ -136,6 +129,7 @@ app.get("/applyPlacements", (req, res) => {
     });
 });
 
+//read
 app.get("/applicants", (req, res) => {
   const pid = req.query.pid;
   const node = firebase
@@ -147,11 +141,13 @@ app.get("/applicants", (req, res) => {
   });
 });
 
+// write
 app.post("/newOppurtunity", (req, res) => {
   const dbRef = firebase.database().ref("placements");
   dbRef.push(req.body);
 });
 
+// read
 app.get("/fetchProfile", (req, res) => {
   const uid = req.query.uid;
   const dbRef = firebase.database().ref("users");
@@ -163,6 +159,7 @@ app.get("/fetchProfile", (req, res) => {
     });
 });
 
+//put/update
 app.post("/updateProfile", (req, res) => {
   const uid = req.body[0];
   const profile = req.body[1];
@@ -175,6 +172,8 @@ app.post("/updateProfile", (req, res) => {
     }
   });
 });
+
+//put/update
 app.post("/updateResume", (req, res) => {
   const uid = req.body[0];
   const resume = req.body[1];
@@ -188,6 +187,7 @@ app.post("/updateResume", (req, res) => {
   });
 });
 
+// write/ update
 app.post("/uploadFirebase", upload.single("file"), async (req, res) => {
   var file = req.file;
   let metadata = { contentType: file.mimetype, name: req.body.name };
@@ -203,6 +203,7 @@ app.post("/uploadFirebase", upload.single("file"), async (req, res) => {
   });
 });
 
+// create
 app.post("/signup", (req, res) => {
   const uinfo = req.body;
   const name = uinfo.name;
@@ -246,6 +247,7 @@ app.post("/signup", (req, res) => {
     });
 });
 
+//get
 app.post("/login", (req, res) => {
   var uinfo = req.body;
   const email = uinfo.email;
@@ -266,6 +268,7 @@ app.post("/login", (req, res) => {
     });
 });
 
+//get
 app.get("/forgot-password", (req, res) => {
   const email = req.query.email;
   firebase
@@ -279,6 +282,7 @@ app.get("/forgot-password", (req, res) => {
     });
 });
 
+//get
 app.get("/checkApplied", async (req, res) => {
   var flag = "NotApplied";
   const loggedUserId = req.query.loggedUserId; //user id
