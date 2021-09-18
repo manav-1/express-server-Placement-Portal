@@ -268,7 +268,7 @@ app.post("/login", (req, res) => {
         res.send(error);
       });
   } catch (err) {
-    res.send(err);
+    res.send({ firebaseConfig, err });
   }
 });
 
