@@ -249,23 +249,27 @@ app.post("/signup", (req, res) => {
 
 //get
 app.post("/login", (req, res) => {
-  var uinfo = req.body;
-  const email = uinfo.email;
-  const password = uinfo.password;
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(email, password)
-    .then(async (user) => {
-      try {
-        const userId = user.user.uid;
-        res.send({ result: "success", uid: userId });
-      } catch {
-        res.send("Error");
-      }
-    })
-    .catch((error) => {
-      res.send(error);
-    });
+  try {
+    var uinfo = req.body;
+    const email = uinfo.email;
+    const password = uinfo.password;
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(async (user) => {
+        try {
+          const userId = user.user.uid;
+          res.send({ result: "success", uid: userId });
+        } catch {
+          res.send("Error");
+        }
+      })
+      .catch((error) => {
+        res.send(error);
+      });
+  } catch (err) {
+    res.send(err);
+  }
 });
 
 //get
