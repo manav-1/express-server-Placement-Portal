@@ -33,20 +33,27 @@ app.get("/", (req, res) => {
 app.get("/placements", function (req, res) {
   const loggedUserId = req.query.loggedUserId;
   if (loggedUserId) {
-    const dbRef = firebase.app().database().ref("placements");
-    dbRef
-      .once("value")
-      .then(function (resp) {
-        const data = resp.val();
-        const opportunities = [];
-        for (var id in data) {
-          opportunities.push({ id, ...data[id] });
-        }
-        res.send(opportunities);
-      })
-      .catch((error) => {
-        res.send("Error");
-      });
+    // console.log(firebase.database());
+    const dbRef = firebase.database().ref("placements/");
+    try {
+      dbRef
+        .once("value")
+        .then((resp) => {
+          // console.log("User logged");
+          const data = resp.val();
+          // console.log(data);
+          const opportunities = [];
+          for (var id in data) {
+            opportunities.push({ id, ...data[id] });
+          }
+          res.send(opportunities);
+        })
+        .catch((error) => {
+          res.send("Error");
+        });
+    } catch (err) {
+      console.log(err);
+    }
   }
 });
 
@@ -143,8 +150,13 @@ app.get("/applicants", (req, res) => {
 
 // write
 app.post("/newOppurtunity", (req, res) => {
-  const dbRef = firebase.database().ref("placements");
-  dbRef.push(req.body);
+  try {
+    const dbRef = firebase.database().ref("placements");
+    dbRef.push(req.body);
+    res.send(true);
+  } catch (err) {
+    res.status(400).send(false);
+  }
 });
 
 // read
