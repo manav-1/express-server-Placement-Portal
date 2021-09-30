@@ -175,14 +175,18 @@ app.get("/fetchProfile", (req, res) => {
 app.post("/updateProfile", (req, res) => {
   const uid = req.body[0];
   const profile = req.body[1];
-  const dbRef = firebase.database().ref("users");
-  dbRef.child(uid).update(profile, (error) => {
-    if (error) {
-      res.send(false);
-    } else {
-      res.send(true);
-    }
-  });
+  try {
+    const dbRef = firebase.database().ref("users");
+    dbRef.child(uid).update(profile, (error) => {
+      if (error) {
+        res.send(false);
+      } else {
+        res.send(true);
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 //put/update
@@ -296,6 +300,17 @@ app.get("/forgot-password", (req, res) => {
     .catch(function (error) {
       res.send("Error");
     });
+});
+
+app.post("/checkadmin", async (req, res) => {
+  console.log('re received')
+  var { loggedUserId, loggedUserEmail } = req.body;
+  if (
+    loggedUserEmail === "manav190839@keshav.du.ac.in" &&
+    loggedUserId === "YE1uMCQrJKNCXa7DUQFrHS9k2K32"
+  ) {
+    return res.status(200).send("Admin");
+  }
 });
 
 //get
